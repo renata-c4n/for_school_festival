@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="resetBtn" style="font-size:12px; padding:4px 8px;">リセット</button>
+    <div id="timerDisplay" style="font-size:2em; margin-top:16px;"></div>
+    <div id="clockDisplay" style="font-size:1.2em; margin-top:24px;"></div>
+    <audio id="audioFirst" src="first.mp3"></audio>
+    <audio id="audioSecond" src="second.mp3"></audio>
+
+    <script>
+    const resetBtn = document.getElementById('resetBtn');
+    const audioFirst = document.getElementById('audioFirst');
+    const audioSecond = document.getElementById('audioSecond');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const clockDisplay = document.getElementById('clockDisplay');
+    let countdownTimer = null;
+    let clockTimer = null;
+    let loopStep = 0;
+    let stopped = false;
+
+    function showCountdown(seconds) {
+        timerDisplay.textContent = `次の音が再生されるまで: ${seconds}秒`;
+        let remaining = seconds;
+        clearInterval(countdownTimer);
+        countdownTimer = setInterval(() => {
+            remaining--;
+            timerDisplay.textContent = `次の音が再生されるまで: ${remaining}秒`;
+            if (remaining <= 0) {
+                clearInterval(countdownTimer);
+            }
+        }, 1000);
+    }
+
+    function showClock() {
+        function updateClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            clockDisplay.textContent = `現在時刻: ${hh}:${mm}:${ss}`;
+        }
+        updateClock();
+        clearInterval(clockTimer);
+        clockTimer = setInterval(updateClock, 1000);
+    }
+
+    function stopAllAudio() {
+        audioFirst.pause();
+        audioFirst.currentTime = 0;
+        audioSecond.pause();
+        audioSecond.currentTime = 0;
+        audioFirst.onended = null;
+        audioSecond.onended = null;
+    }
+
+    function playLoop() {
+        stopped = false;
+        loopStep = 0;
+        playAndWait(audioFirst, 60, () => {
+            loopStep = 1;
+            loopCycle();
+        });
+    }
+
+    function loopCycle() {
+        if (stopped) return;
+        if (loopStep % 2 === 1) {
+            playAndWait(audioSecond, 60, () => {
+                loopStep++;
+                loopCycle();
+            });
+        } else {
+            playAndWait(audioFirst, 60, () => {
+                loopStep++;
+                loopCycle();
+            });
+        }
+    }
+
+    function playAndWait(audioElem, waitSeconds, callback) {
+        stopAllAudio();
+        audioElem.currentTime = 0;
+        audioElem.play();
+        showCountdown(waitSeconds);
+
+        audioElem.onended = () => {
+            clearInterval(countdownTimer);
+            timerDisplay.textContent = `次の音が再生されるまで: ${waitSeconds}秒`;
+            let waited = 0;
+            countdownTimer = setInterval(() => {
+                waited++;
+                timerDisplay.textContent = `次の音が再生されるまで: ${waitSeconds - waited}秒`;
+                if (waited >= waitSeconds) {
+                    clearInterval(countdownTimer);
+                    audioElem.onended = null;
+                    if (!stopped) callback();
+                }
+            }, 1000);
+        };
+    }
+
+    resetBtn.onclick = function() {
+        stopped = true;
+        clearInterval(countdownTimer);
+        timerDisplay.textContent = '';
+        stopAllAudio();
+        playLoop();
+        showClock();
+    };
+
+    showClock();
+    </script>
+</body>
+</html>
