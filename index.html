@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>チャイム</title>
+    <title>Document</title>
 </head>
 <body>
-    <button id="resetBtn" style="font-size:12px; padding:4px 8px;">リセット</button>
+    <button onclick="document.getElementById('bgm').play()">BGM 開始</button>
+    <button id="resetBtn" style="font-size:12px; padding:4px 8px;">チャイムリセット</button>
     <div id="timerDisplay" style="font-size:2em; margin-top:16px;"></div>
     <div id="clockDisplay" style="font-size:1.2em; margin-top:24px;"></div>
+
     <audio id="audioFirst" src="first.mp3"></audio>
     <audio id="audioSecond" src="second.mp3"></audio>
+    <audio id="bgm" src="piano_bgm_mastered.wav" loop></audio>
 
     <script>
     const resetBtn = document.getElementById('resetBtn');
@@ -113,6 +116,7 @@
         showClock();
     };
 
+    // ページ表示時に現在時刻を表示
     showClock();
     </script>
 </body>
